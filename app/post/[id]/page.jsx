@@ -1,3 +1,6 @@
+import { Suspense } from "react";
+import Loading from "../../loading";
+
 async function getPost(id) {
   const query = `
         query GetPostById($id: ID!) {
@@ -14,11 +17,14 @@ async function getPost(id) {
   };
 
   const res = await fetch(process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT, {
-    method: "POST",
+    method: "POST", // If you need POST, you can change it
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ query, variables }), // Include the variables here
+    next: {
+      revalidate: 60, //Using ISR to refetch and rebuild every 60 seconds
+    },
   });
 
   const { data } = await res.json();
@@ -34,9 +40,11 @@ export default async function PostDetails({ params }) {
       <nav>
         <h1>{post.title}</h1>
       </nav>
-      <div className="card" key={post.id}>
-        <p dangerouslySetInnerHTML={{ __html: post.content }} />
-      </div>
+      <Suspense fallback={<Loading />}>
+        <div className="card" key={post.id}>
+          <p dangerouslySetInnerHTML={{ __html: post.content }} />
+        </div>
+      </Suspense>
     </main>
   );
 }

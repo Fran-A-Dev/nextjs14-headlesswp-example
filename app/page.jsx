@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import Loading from "./loading";
+
 async function getPosts() {
   const query = `
   {
@@ -12,13 +15,20 @@ async function getPosts() {
   }
     `;
 
-  const res = await fetch(process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ query }),
-  });
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT}?query=${encodeURIComponent(
+      query
+    )}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      next: {
+        revalidate: 0, //using 0 opts out of cache and re-fetches on every request
+      },
+    }
+  );
 
   const { data } = await res.json();
 
@@ -32,14 +42,16 @@ export default async function PostList() {
     <>
       {posts.map((post) => (
         <div key={post.databaseId} className="card">
-          <Link href={`/post/${post.databaseId}`}>
-            <h3>{post.title}</h3>
-            <p
-              dangerouslySetInnerHTML={{
-                __html: post.content.slice(0, 200) + "...",
-              }}
-            />
-          </Link>
+          <Suspense fallback={<Loading />}>
+            <Link href={`/post/${post.databaseId}`}>
+              <h3>{post.title}</h3>
+              <p
+                dangerouslySetInnerHTML={{
+                  __html: post.content.slice(0, 200) + "...",
+                }}
+              />
+            </Link>
+          </Suspense>
         </div>
       ))}
     </>
