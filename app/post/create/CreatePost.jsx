@@ -1,17 +1,8 @@
-"use client";
-
-import { useState } from "react";
-
 export default function CreatePost() {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState(null);
+  const handleSubmit = async (data) => {
+    'use server';
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setSuccessMessage(null); // Reset the success message on a new submission
+    // e.preventDefault();
 
     const CREATE_POST = `
       mutation CreatePost($title: String!, $content: String!) {
@@ -26,68 +17,83 @@ export default function CreatePost() {
     `;
 
     const variables = {
-      title,
-      content,
+      title: data.get('title'),
+      content: data.get('content'),
     };
 
-    console.log("Query:", CREATE_POST); // Log 1
-    console.log("Variables:", variables); // Log 1
+    console.log(variables)
 
-    try {
-      const res = await fetch("https://smartcahce.wpengine.com/graphql", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: CREATE_POST, variables }),
-      });
+    // console.log("Query:", CREATE_POST); // Log 1
+    // console.log("Variables:", variables); // Log 1
 
-      const jsonResponse = await res.json();
-      const { data, errors } = jsonResponse;
+    // try {
+    //   const res = await fetch('https://smartcahce.wpengine.com/graphql', {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       'Authorization': 'Bearer xxxx'
+    //     },
+    //     body: JSON.stringify({
+    //       query: CREATE_POST,
+    //       variables
+    //     })
+    //   });
+    // } catch (err) {
+    //   console.log('There was an error', err)
+    // }
 
-      console.log("Response data:", data); // Log 2
-      console.log("Response errors:", errors); // Log 2
+    // try {
+    //   const res = await fetch("https://smartcahce.wpengine.com/graphql", {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify({ query: CREATE_POST, variables }),
+    //   });
 
-      if (data && data.createPost && data.createPost.post) {
-        setSuccessMessage("Post created successfully");
-        setTitle(""); // Clear the input fields
-        setContent("");
-      } else {
-        // Handle error
-        console.error("Error creating post");
-        setSuccessMessage(null);
-      }
-    } catch (error) {
-      console.error("An error occurred:", error);
-      setSuccessMessage(null);
-    }
+    //   const jsonResponse = await res.json();
+    //   const { data, errors } = jsonResponse;
 
-    setIsLoading(false);
+    //   console.log("Response data:", data); // Log 2
+    //   console.log("Response errors:", errors); // Log 2
+
+    //   if (data && data.createPost && data.createPost.post) {
+    //     setSuccessMessage("Post created successfully");
+    //     setTitle(""); // Clear the input fields
+    //     setContent("");
+    //   } else {
+    //     // Handle error
+    //     console.error("Error creating post");
+    //     setSuccessMessage(null);
+    //   }
+    // } catch (error) {
+    //   console.error("An error occurred:", error);
+    //   setSuccessMessage(null);
+    // }
+
+    // setIsLoading(false);
   };
 
   // ...
 
   return (
-    <form onSubmit={handleSubmit} className="w-1/2">
-      {successMessage && <div>{successMessage}</div>}{" "}
+    <form action={handleSubmit} className="w-1/2">
       {/* Display success message */}
       <label>
         <span>Title:</span>
         <input
+          name="title"
           required
           type="text"
-          onChange={(e) => setTitle(e.target.value)}
-          value={title}
         />
       </label>
       <label>
         <span>Content:</span>
         <textarea
+          name="content"
           required
-          onChange={(e) => setContent(e.target.value)}
-          value={content}
         />
       </label>
-      <button className="btn-primary" disabled={isLoading}>
-        {isLoading ? <span>Adding...</span> : <span>Create Post</span>}
+      <button className="btn-primary">
+         <span>Create Post</span>
       </button>
     </form>
   );
