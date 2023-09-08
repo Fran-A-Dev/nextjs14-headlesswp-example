@@ -1,14 +1,59 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const AuthForm = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [jwt, setJwt] = useState("");
   const [posts, setPosts] = useState([]);
-  const [title, setTitle] = useState(""); // Add the title state variable
+  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [loginError, setLoginError] = useState(null);
+  const [loading, setLoading] = useState(true); // Add a loading state
+
+  useEffect(() => {
+    // Check if a JWT token is stored in the browser's localStorage
+    const storedToken = localStorage.getItem("authToken");
+    if (storedToken) {
+      setJwt(storedToken);
+      setLoading(false); // Set loading to false once token is found
+    } else {
+      setLoading(false); // Set loading to false even if token is not found
+    }
+  }, []); // Only run this effect once, on component mount
+
+  useEffect(() => {
+    // Check if JWT token is set
+    if (jwt) {
+      // Fetch posts data when JWT token is available
+      fetch(process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT, {
+        method: "post",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwt}`,
+        },
+        body: JSON.stringify({
+          query: `
+            query GetAllPosts {
+              posts(where: { status: DRAFT }) {
+                nodes {
+                  title
+                  content
+                }
+              }
+            }
+          `,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          setPosts(data?.data?.posts?.nodes || []);
+        })
+        .catch((error) => {
+          console.error("An error occurred:", error);
+        });
+    }
+  }, [jwt]);
 
   const loginAndFetch = async (e) => {
     e.preventDefault();
@@ -27,11 +72,6 @@ const AuthForm = () => {
                   password: "${password}"
                 }){
                   authToken
-                  user {
-                    id
-                    databaseId
-                    name
-                  }
                 }
               }
             `,
@@ -39,38 +79,11 @@ const AuthForm = () => {
       });
 
       const { data } = await response.json();
-      console.log(data);
 
       if (data?.login?.authToken) {
-        console.log("Fetching auth content...");
+        // Store JWT token in localStorage
+        localStorage.setItem("authToken", data.login.authToken);
         setJwt(data.login.authToken);
-
-        const authResponse = await fetch(
-          process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT,
-          {
-            method: "post",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${data.login.authToken}`,
-            },
-            body: JSON.stringify({
-              query: `
-                query GetAllPosts {
-                  posts(where: { status: DRAFT }) {
-                    nodes {
-                      title
-                      content
-                    }
-                  }
-                }
-              `,
-            }),
-          }
-        );
-
-        const authData = await authResponse.json();
-        setPosts(authData?.data?.posts?.nodes);
-        console.log(authData);
       }
     } catch (error) {
       console.error("An error occurred:", error);
@@ -112,40 +125,63 @@ const AuthForm = () => {
       console.error("An error occurred:", error);
     }
   };
+
+  const logout = () => {
+    // Remove JWT token from localStorage
+    localStorage.removeItem("authToken");
+    setJwt("");
+  };
+
   return (
     <>
-      <form onSubmit={loginAndFetch}>
-        <label htmlFor="usernameInput">Username</label>
-        <input
-          type="text"
-          name="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          id="usernameInput"
-        />
-        <label htmlFor="passwordInput">Password</label>
-        <input
-          type="password"
-          name="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          id="passwordInput"
-        />
-        <button type="submit">Login</button>
-      </form>
+      {loading ? (
+        // Display a loading indicator here
+        <p>Loading...</p>
+      ) : jwt ? (
+        <div>
+          <button
+            onClick={logout}
+            type="button"
+            className="bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded"
+          >
+            Logout
+          </button>
+        </div>
+      ) : (
+        <form onSubmit={loginAndFetch}>
+          <label htmlFor="usernameInput">Username</label>
+          <input
+            type="text"
+            name="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            id="usernameInput"
+          />
+          <label htmlFor="passwordInput">Password</label>
+          <input
+            type="password"
+            name="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            id="passwordInput"
+          />
+          <button type="submit">Login</button>
+        </form>
+      )}
       {loginError && <p className="text-red-500">{loginError}</p>}
-      <section className="mb-8">
-        <h3 className="font-semibold mb-2 text-primary">Draft Posts</h3>
-        <ul>
-          {posts.map((post) => (
-            <li key={post.title} className="card">
-              <h4 className="text-lg font-medium">{post.title}</h4>
-              <p dangerouslySetInnerHTML={{ __html: post.content }} />
-            </li>
-          ))}
-        </ul>
-      </section>
-
+      {jwt && (
+        <section className="mb-8">
+          <h3 className="font-semibold mb-2 text-primary">Draft Posts</h3>
+          <ul>
+            {posts.map((post) => (
+              <li key={post.title} className="card">
+                <h4 className="text-lg font-medium">{post.title}</h4>
+                <p dangerouslySetInnerHTML={{ __html: post.content }} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       {jwt && (
         <section>
           <div className="mb-4">
