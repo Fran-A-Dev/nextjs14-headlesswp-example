@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 
 const AuthForm = () => {
@@ -10,6 +11,7 @@ const AuthForm = () => {
   const [content, setContent] = useState("");
   const [loginError, setLoginError] = useState(null);
   const [loading, setLoading] = useState(true); // Add a loading state
+  const [userData, setUserData] = useState(null); // Add user data state
 
   useEffect(() => {
     // Check if a JWT token is stored in the browser's localStorage
@@ -39,6 +41,11 @@ const AuthForm = () => {
                 nodes {
                   title
                   content
+                  author {
+                    node {
+                      username
+                    }
+                  }
                 }
               }
             }
@@ -48,6 +55,32 @@ const AuthForm = () => {
         .then((response) => response.json())
         .then((data) => {
           setPosts(data?.data?.posts?.nodes || []);
+        })
+        .catch((error) => {
+          console.error("An error occurred:", error);
+        });
+
+      // Fetch user data
+      fetch(process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT, {
+        method: "post",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwt}`,
+        },
+        body: JSON.stringify({
+          query: `
+            query GetUserData {
+              viewer {
+                id
+                username
+              }
+            }
+          `,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          setUserData(data?.data?.viewer || null);
         })
         .catch((error) => {
           console.error("An error occurred:", error);
@@ -146,6 +179,11 @@ const AuthForm = () => {
           >
             Logout
           </button>
+          {userData && (
+            <span className="ml-4 text-blue-900">
+              Welcome, {userData.username}
+            </span>
+          )}
         </div>
       ) : (
         <form onSubmit={loginAndFetch}>
@@ -177,6 +215,7 @@ const AuthForm = () => {
               <li key={post.title} className="card">
                 <h4 className="text-lg font-medium">{post.title}</h4>
                 <p dangerouslySetInnerHTML={{ __html: post.content }} />
+                <span>Author: {post.author.node.username}</span>
               </li>
             ))}
           </ul>
