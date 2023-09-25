@@ -152,8 +152,9 @@ const AuthForm = () => {
       const responseData = await response.json();
       console.log("Created post:", responseData);
 
-      // Display a success message here
       alert("Draft post created successfully!");
+      setTitle(""); // Clear the title
+      setContent(""); // Clear the content
     } catch (error) {
       console.error("An error occurred:", error);
     }
