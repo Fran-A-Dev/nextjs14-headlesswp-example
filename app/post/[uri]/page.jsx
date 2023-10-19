@@ -7,8 +7,7 @@ async function getPost(uri) {
     post(id: $uri, idType: URI) {
       title
       content
-      id
-      uri
+      
     }
   }
       `;
