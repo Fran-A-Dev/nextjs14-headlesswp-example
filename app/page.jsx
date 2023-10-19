@@ -9,7 +9,7 @@ async function getPosts() {
       nodes {
         title
         content
-        databaseId
+        uri
       }
     }
   }
@@ -23,9 +23,6 @@ async function getPosts() {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-      },
-      next: {
-        revalidate: 0, //using 0 opts out of cache and re-fetches on every request
       },
     }
   );
@@ -41,9 +38,9 @@ export default async function PostList() {
   return (
     <>
       {posts.map((post) => (
-        <div key={post.databaseId} className="card">
+        <div key={post.uri} className="card">
           <Suspense fallback={<Loading />}>
-            <Link href={`/post/${post.databaseId}`}>
+            <Link href={`/post/${post.uri}`}>
               <h3>{post.title}</h3>
               <p
                 dangerouslySetInnerHTML={{
