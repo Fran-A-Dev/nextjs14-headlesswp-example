@@ -21,6 +21,9 @@ async function getPost(uri) {
     headers: {
       "Content-Type": "application/json",
     },
+    next: {
+      revalidate: 60,
+    },
     body: JSON.stringify({ query, variables }),
   });
 

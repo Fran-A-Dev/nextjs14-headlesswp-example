@@ -17,6 +17,11 @@ export default function RootLayout({ children }) {
       <body className={rubik.className}>
         <Navbar />
         {children}
+        <footer
+          style={{ textAlign: "center", marginTop: "20px", fontSize: "14px" }}
+        >
+          © 2023 Fran Agulto Dev Stoke
+        </footer>
       </body>
     </html>
   );
