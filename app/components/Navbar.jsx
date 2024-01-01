@@ -12,7 +12,7 @@ export default function Navbar() {
         quality={100}
       />
 
-      <h1>Fran&apos;s Next.js 13 Headless WP Example</h1>
+      <h1>Fran&apos;s Next.js 13 Headless WP Example!!!</h1>
       <Link href="/">Home</Link>
       <Link href="/login">Login</Link>
     </nav>

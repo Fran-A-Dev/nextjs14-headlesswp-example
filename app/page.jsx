@@ -13,7 +13,7 @@ async function getPosts() {
       }
     }
   }
-    `;
+  `;
 
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT}?query=${encodeURIComponent(
@@ -23,10 +23,9 @@ async function getPosts() {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        // ... any other headers you need to include (like authentication tokens)
       },
-      next: {
-        revalidate: 0,
-      },
+      cache: "no-store",
     }
   );
 
@@ -39,21 +38,23 @@ export default async function PostList() {
   const posts = await getPosts();
 
   return (
-    <>
-      {posts.map((post) => (
-        <div key={post.uri} className="card">
-          <Suspense fallback={<Loading />}>
+    <Suspense fallback={<Loading />}>
+      <div>
+        {posts.map((post) => (
+          <div key={post.uri} className="card">
             <Link href={`/post/${post.uri}`}>
-              <h3>{post.title}</h3>
-              <p
-                dangerouslySetInnerHTML={{
-                  __html: post.content.slice(0, 200) + "...",
-                }}
-              />
+              <a>
+                <h3>{post.title}</h3>
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: post.content.slice(0, 200) + "...",
+                  }}
+                />
+              </a>
             </Link>
-          </Suspense>
-        </div>
-      ))}
-    </>
+          </div>
+        ))}
+      </div>
+    </Suspense>
   );
 }
