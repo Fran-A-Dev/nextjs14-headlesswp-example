@@ -20,7 +20,7 @@ export default function RootLayout({ children }) {
         <footer
           style={{ textAlign: "center", marginTop: "20px", fontSize: "14px" }}
         >
-          © 2023 Fran Agulto Dev Stoke
+          © 2024 Fran Agulto Dev Stoke
         </footer>
       </body>
     </html>

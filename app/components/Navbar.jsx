@@ -15,6 +15,7 @@ export default function Navbar() {
       <h1>Fran&apos;s Next.js 13 Headless WP Example!!!</h1>
       <Link href="/">Home</Link>
       <Link href="/login">Login</Link>
+      <Link href="/movies">Movies</Link>
     </nav>
   );
 }
