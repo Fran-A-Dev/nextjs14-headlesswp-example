@@ -7,7 +7,12 @@ export default function LocalPage() {
 
   useEffect(() => {
     fetch("/api/log-headers")
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then((data) => {
         console.log("Fetched data:", data);
         setHeaders(data);
