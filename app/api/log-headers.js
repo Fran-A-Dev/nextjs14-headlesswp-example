@@ -6,9 +6,9 @@ export async function GET(request) {
   const region = headers.get("wpe-headless-region");
   const timezone = headers.get("wpe-headless-timezone");
 
-  console.log("Country:", country);
-  console.log("Region:", region);
-  console.log("Timezone:", timezone);
+  console.log("Country:", country || "No country header");
+  console.log("Region:", region || "No region header");
+  console.log("Timezone:", timezone || "No timezone header");
 
   return NextResponse.json({
     message: "Headers logged",
