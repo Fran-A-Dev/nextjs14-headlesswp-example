@@ -1,31 +1,16 @@
-"use client";
+import { headers } from "next/headers";
 
-import { useEffect, useState } from "react";
-
-export default function LocalPage() {
-  const [headers, setHeaders] = useState({});
-
-  useEffect(() => {
-    fetch("/api/log-headers")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("Fetched data:", data);
-        setHeaders(data);
-      })
-      .catch((error) => console.error("Error fetching headers:", error));
-  }, []);
+export default async function LocalPage() {
+  const country = headers().get("wpe-headless-country") || "No country data";
+  const region = headers().get("wpe-headless-region") || "No region data";
+  const timezone = headers().get("wpe-headless-timezone") || "No timezone data";
 
   return (
     <div>
       <h1>Geolocation Data</h1>
-      <p>Country: {headers.country || "No country data"}</p>
-      <p>Region: {headers.region || "No region data"}</p>
-      <p>Timezone: {headers.timezone || "No timezone data"}</p>
+      <p>Country: {country}</p>
+      <p>Region: {region}</p>
+      <p>Timezone: {timezone}</p>
     </div>
   );
 }
