@@ -1,12 +1,15 @@
 async function getMovies() {
   const query = `
-  query GetMovies {
+  query getMovies {
     movies {
       nodes {
         movieFields {
+          
+         
           movieQuote
-          movieTitle
         }
+        title
+        uri
       }
     }
   }
@@ -16,13 +19,13 @@ async function getMovies() {
     `${process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT}?query=${encodeURIComponent(
       query
     )}`,
+    { next: { revalidate: 10 } },
     {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         // ... any other headers you need to include (like authentication tokens)
       },
-      cache: "no-store",
     }
   );
 
@@ -38,10 +41,10 @@ export default async function MovieList() {
     <div>
       {movies.map((movie) => {
         // Ensure that you are accessing the movieQuote from the movie.movieFields object
-        const { movieFields: { movieQuote, movieTitle } = {} } = movie;
+        const { movieFields: { movieQuote, title } = {} } = movie;
         return (
           <div key={movie.uri} className="card">
-            <h3>{movieTitle}</h3>
+            <h3>{movie.title}</h3>
             <div
               dangerouslySetInnerHTML={{
                 __html: movieQuote,

@@ -19,13 +19,13 @@ async function getPosts() {
     `${process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT}?query=${encodeURIComponent(
       query
     )}`,
+    { next: { revalidate: 10 } },
     {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         // ... any other headers you need to include (like authentication tokens)
       },
-      cache: "no-store",
     }
   );
 
